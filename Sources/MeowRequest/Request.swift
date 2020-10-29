@@ -22,10 +22,10 @@ public extension URLSession {
         return task
     }
 
-    func upload(to url: String, parameters: [String: String], data: Data, filename: String,  completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
+    func upload(to url: String, parameters: [String: String], data: Data, key: String, filename: String,  completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
         let url = URL(string: url)!
         var request = URLRequest(url: url)
-        request.setUploadParameters(parameters, data: data, filename: filename)
+        request.setUploadParameters(parameters, data: data, key: key, filename: filename)
         let task = dataTask(with: request, completionHandler: completionHandler)
         task.resume()
         return task
@@ -60,7 +60,7 @@ fileprivate extension URLRequest {
         httpBody = parameters.urlQueryEncoded.data(using: String.Encoding.utf8)
     }
     
-    mutating func setUploadParameters(_ parameters: [String : String], data: Data, filename: String) {
+    mutating func setUploadParameters(_ parameters: [String : String], data: Data, key: String, filename: String) {
         let boundary = "Boundary-\(UUID().uuidString)"
         let mimeType = "application/octet-stream"
 
@@ -75,7 +75,7 @@ fileprivate extension URLRequest {
         }
         /* File information */
         body.appendString(boundaryPrefix)
-        body.appendString("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n")
+        body.appendString("Content-Disposition: form-data; name=\"\(key)\"; filename=\"\(filename)\"\r\n")
         body.appendString("Content-Type: \(mimeType)\r\n\r\n")
         /* File data */
         body.append(data)

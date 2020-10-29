@@ -90,14 +90,14 @@ public class BaseRequestHandler<Output> {
     }
 
     public class func upload(url: String,
-                             data: Data, filename: String,
+                             data: Data, key: String = "file", filename: String,
                              params: [String:String] = [:],
                              success: SuccessHandler? = nil,
                              fail: FailHandler? = nil,
                              queue: DispatchQueue = .main,
                              session: URLSession = .shared) -> Self {
         let handler = self.init(success: success, fail: fail, queue: queue)
-        let task = session.upload(to: url, parameters: params, data: data, filename: filename) { (data, response, error) in
+        let task = session.upload(to: url, parameters: params, data: data, key: key, filename: filename) { (data, response, error) in
             _ = handler.commonHandler(data: data, response: response, error: error)
         }
         handler.dataTask = task
