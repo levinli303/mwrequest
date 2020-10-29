@@ -86,8 +86,6 @@ fileprivate extension URLRequest {
         httpBody = body
         setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
         setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        
-        httpBody = parameters.urlQueryEncoded.data(using: String.Encoding.utf8)
     }
 }
 
