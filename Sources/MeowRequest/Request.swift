@@ -74,7 +74,7 @@ fileprivate extension URLRequest {
         setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         httpBody = parameters.urlQueryEncoded.data(using: String.Encoding.utf8)
     }
-    
+
     mutating func setUploadParameters(_ parameters: [String: String], data: Data, key: String, filename: String) {
         let boundary = "Boundary-\(UUID().uuidString)"
         let mimeType = "application/octet-stream"
@@ -96,7 +96,7 @@ fileprivate extension URLRequest {
         body.append(data)
         body.appendString("\r\n")
         body.appendString("--".appending(boundary.appending("--")))
-        
+
         httpMethod = "POST"
         httpBody = body
         setValue("\(body.count)", forHTTPHeaderField: "Content-Length")

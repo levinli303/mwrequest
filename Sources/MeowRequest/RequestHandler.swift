@@ -12,9 +12,34 @@ import Foundation
 import FoundationNetworking
 #endif
 
+public enum RequestError: Error {
+    case noResponse
+    case httpEror(errorString: String)
+    case urlSessionError(error: Error)
+    case noData
+    case decodingError(error: Error)
+}
+
+extension RequestError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .noData:
+            return NSLocalizedString("No data", comment: "")
+        case .noResponse:
+            return NSLocalizedString("No response", comment: "")
+        case .decodingError(let error):
+            return error.localizedDescription
+        case .httpEror(let errorString):
+            return errorString
+        case .urlSessionError(let error):
+            return error.localizedDescription
+        }
+    }
+}
+
 public class BaseRequestHandler<Output> {
     public typealias SuccessHandler = (Output) -> Void
-    public typealias FailureHandler = (String) -> Void
+    public typealias FailureHandler = (RequestError) -> Void
     fileprivate let successHandler: SuccessHandler?
     fileprivate let failureHandler: FailureHandler?
     fileprivate var dataTask: URLSessionDataTask?
@@ -30,20 +55,19 @@ public class BaseRequestHandler<Output> {
 
     fileprivate func commonHandler(data: Data?, response: URLResponse?, error: Error?) -> Bool {
         guard error == nil else {
-            failureHandler?(error!.localizedDescription)
+            failureHandler?(.urlSessionError(error: error!))
             return true
         }
         guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-            failureHandler?(NSLocalizedString("No Response", comment: ""))
+            failureHandler?(.noResponse)
             return true
         }
         guard statusCode < 400 else {
-            failureHandler?(HTTPURLResponse.localizedString(forStatusCode:
-                statusCode))
+            failureHandler?(.httpEror(errorString: HTTPURLResponse.localizedString(forStatusCode: statusCode)))
             return true
         }
         guard data != nil else {
-            failureHandler?(NSLocalizedString("No data", comment: ""))
+            failureHandler?(.noData)
             return true
         }
         return false
@@ -142,7 +166,7 @@ public class JSONRequestHandler<Output>: BaseRequestHandler<Output> where Output
             successHandler?(output)
             return false
         } catch let error {
-            failureHandler?(error.localizedDescription)
+            failureHandler?(.decodingError(error: error))
             return true
         }
     }
