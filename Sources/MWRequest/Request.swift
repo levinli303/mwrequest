@@ -1,9 +1,5 @@
 //
-//  Request.swift
-//  MeowUtils
-//
-//  Created by Li Linfeng on 31/10/2018.
-//  Copyright © 2018 Li Linfeng. All rights reserved.
+//  Copyright © 2020 Levin Li. All rights reserved.
 //
 
 import Foundation

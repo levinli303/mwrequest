@@ -1,4 +1,4 @@
 import XCTest
 
-import MeowRequestTests
+import MWRequestTests
 

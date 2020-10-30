@@ -1,7 +1,7 @@
 import XCTest
-@testable import MeowRequest
+@testable import MWRequest
 
-final class MeowRequestTests: XCTestCase {
+final class MWRequestTests: XCTestCase {
     func testExample() {
     }
 
