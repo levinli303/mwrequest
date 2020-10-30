@@ -13,10 +13,19 @@ import FoundationNetworking
 #endif
 
 public extension URLSession {
-    func post(to url: String, parameters: [String : String], completionHandler: @escaping (Data?, URLResponse?, Error?) -> Swift.Void) -> URLSessionDataTask {
+    func post(to url: String, parameters: [String: String], completionHandler: @escaping (Data?, URLResponse?, Error?) -> Swift.Void) -> URLSessionDataTask {
         let url = URL(string: url)!
         var request = URLRequest(url: url)
         request.setPostParameters(parameters)
+        let task = dataTask(with: request, completionHandler: completionHandler)
+        task.resume()
+        return task
+    }
+
+    func post<T: Encodable>(to url: String, json: T, encoder: JSONEncoder?, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Swift.Void) -> URLSessionDataTask {
+        let url = URL(string: url)!
+        var request = URLRequest(url: url)
+        request.setPostParametersJson(json, encoder: encoder)
         let task = dataTask(with: request, completionHandler: completionHandler)
         task.resume()
         return task
@@ -54,13 +63,19 @@ fileprivate extension Dictionary where Key == String, Value == String {
 }
 
 fileprivate extension URLRequest {
-    mutating func setPostParameters(_ parameters: [String : String]) {
+    mutating func setPostParametersJson<T: Encodable>(_ encodable: T, encoder: JSONEncoder?) {
+        httpMethod = "POST"
+        setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+        httpBody = try? (encoder ?? JSONEncoder()).encode(encodable)
+    }
+
+    mutating func setPostParameters(_ parameters: [String: String]) {
         httpMethod = "POST"
         setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         httpBody = parameters.urlQueryEncoded.data(using: String.Encoding.utf8)
     }
     
-    mutating func setUploadParameters(_ parameters: [String : String], data: Data, key: String, filename: String) {
+    mutating func setUploadParameters(_ parameters: [String: String], data: Data, key: String, filename: String) {
         let boundary = "Boundary-\(UUID().uuidString)"
         let mimeType = "application/octet-stream"
 

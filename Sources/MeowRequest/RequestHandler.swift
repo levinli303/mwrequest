@@ -14,61 +14,48 @@ import FoundationNetworking
 
 public class BaseRequestHandler<Output> {
     public typealias SuccessHandler = (Output) -> Void
-    public typealias FailHandler = (String) -> Void
+    public typealias FailureHandler = (String) -> Void
     fileprivate let successHandler: SuccessHandler?
-    fileprivate let failHandler: FailHandler?
-    fileprivate let resultQueue: DispatchQueue
+    fileprivate let failureHandler: FailureHandler?
     fileprivate var dataTask: URLSessionDataTask?
 
-    required init(success: SuccessHandler?, fail: FailHandler?, queue: DispatchQueue) {
-        failHandler = fail
+    required init(success: SuccessHandler?, failure: FailureHandler?) {
+        failureHandler = failure
         successHandler = success
-        resultQueue = queue
     }
 
     public func cancel() {
         dataTask?.cancel()
     }
 
-    fileprivate func asyncFailHandler(message: String) {
-        guard let fail = failHandler else { return }
-        resultQueue.async { fail(message) }
-    }
-
-    fileprivate func asyncSuccessHandler(output: Output) {
-        guard let success = successHandler else { return }
-        resultQueue.async { success(output) }
-    }
-
     fileprivate func commonHandler(data: Data?, response: URLResponse?, error: Error?) -> Bool {
         guard error == nil else {
-            asyncFailHandler(message: error!.localizedDescription)
+            failureHandler?(error!.localizedDescription)
             return true
         }
         guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-            asyncFailHandler(message: NSLocalizedString("No Response", comment: ""))
+            failureHandler?(NSLocalizedString("No Response", comment: ""))
             return true
         }
         guard statusCode < 400 else {
-            asyncFailHandler(message: HTTPURLResponse.localizedString(forStatusCode:
+            failureHandler?(HTTPURLResponse.localizedString(forStatusCode:
                 statusCode))
             return true
         }
         guard data != nil else {
-            asyncFailHandler(message: NSLocalizedString("No data", comment: ""))
+            failureHandler?(NSLocalizedString("No data", comment: ""))
             return true
         }
         return false
     }
 
     public class func get(url: String,
-                          params: [String:String] = [:],
+                          parameters: [String: String] = [:],
                           success: SuccessHandler? = nil,
-                          fail: FailHandler? = nil,
-                          queue: DispatchQueue = .main,
+                          failure: FailureHandler? = nil,
                           session: URLSession = .shared) -> Self {
-        let handler = self.init(success: success, fail: fail, queue: queue)
-        let task = session.get(from: url, parameters: params) { (data, response, error) in
+        let handler = self.init(success: success, failure: failure)
+        let task = session.get(from: url, parameters: parameters) { (data, response, error) in
             _ = handler.commonHandler(data: data, response: response, error: error)
         }
         handler.dataTask = task
@@ -76,13 +63,26 @@ public class BaseRequestHandler<Output> {
     }
 
     public class func post(url: String,
-                           params: [String:String] = [:],
+                           parameters: [String: String] = [:],
                            success: SuccessHandler? = nil,
-                           fail: FailHandler? = nil,
-                           queue: DispatchQueue = .main,
+                           failure: FailureHandler? = nil,
                            session: URLSession = .shared) -> Self {
-        let handler = self.init(success: success, fail: fail, queue: queue)
-        let task = session.post(to: url, parameters: params) { (data, response, error) in
+        let handler = self.init(success: success, failure: failure)
+        let task = session.post(to: url, parameters: parameters) { (data, response, error) in
+            _ = handler.commonHandler(data: data, response: response, error: error)
+        }
+        handler.dataTask = task
+        return handler
+    }
+
+    public class func post<T: Encodable>(url: String,
+                                         json: T,
+                                         encoder: JSONEncoder?,
+                                         success: SuccessHandler? = nil,
+                                         failure: FailureHandler? = nil,
+                                         session: URLSession = .shared) -> Self {
+        let handler = self.init(success: success, failure: failure)
+        let task = session.post(to: url, json: json, encoder: encoder) { (data, response, error) in
             _ = handler.commonHandler(data: data, response: response, error: error)
         }
         handler.dataTask = task
@@ -91,13 +91,12 @@ public class BaseRequestHandler<Output> {
 
     public class func upload(url: String,
                              data: Data, key: String = "file", filename: String,
-                             params: [String:String] = [:],
+                             parameters: [String: String] = [:],
                              success: SuccessHandler? = nil,
-                             fail: FailHandler? = nil,
-                             queue: DispatchQueue = .main,
+                             failure: FailureHandler? = nil,
                              session: URLSession = .shared) -> Self {
-        let handler = self.init(success: success, fail: fail, queue: queue)
-        let task = session.upload(to: url, parameters: params, data: data, key: key, filename: filename) { (data, response, error) in
+        let handler = self.init(success: success, failure: failure)
+        let task = session.upload(to: url, parameters: parameters, data: data, key: key, filename: filename) { (data, response, error) in
             _ = handler.commonHandler(data: data, response: response, error: error)
         }
         handler.dataTask = task
@@ -110,7 +109,7 @@ public class EmptyRequestHandler: BaseRequestHandler<Void> {
         guard !super.commonHandler(data: data, response: response, error: error) else {
             return true
         }
-        asyncSuccessHandler(output: ())
+        successHandler?(())
         return false
     }
 }
@@ -120,7 +119,7 @@ public class DataRequestHandler: BaseRequestHandler<Data> {
         guard !super.commonHandler(data: data, response: response, error: error) else {
             return true
         }
-        asyncSuccessHandler(output: data!)
+        successHandler?(data!)
         return false
     }
 }
@@ -140,10 +139,10 @@ public class JSONRequestHandler<Output>: BaseRequestHandler<Output> where Output
         }
         do {
             let output = try (Output.decoder ?? JSONDecoder()).decode(Output.self, from: data!)
-            asyncSuccessHandler(output: output)
+            successHandler?(output)
             return false
         } catch let error {
-            asyncFailHandler(message: error.localizedDescription)
+            failureHandler?(error.localizedDescription)
             return true
         }
     }
