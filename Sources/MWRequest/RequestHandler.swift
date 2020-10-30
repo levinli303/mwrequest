@@ -137,7 +137,7 @@ public class BaseRequestHandler<Output> {
 
     public class func post<T: Encodable>(url: String,
                                          json: T,
-                                         encoder: JSONEncoder?,
+                                         encoder: JSONEncoder? = nil,
                                          success: SuccessHandler? = nil,
                                          failure: FailureHandler? = nil,
                                          session: URLSession = .shared) -> Self {
