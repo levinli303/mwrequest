@@ -1,3 +1,7 @@
-# MWRequest
+## MWRequest
 
-A description of this package.
+HTTP request wrapper.
+
+## License
+
+Licensed under the [MIT](LICENSE) license.

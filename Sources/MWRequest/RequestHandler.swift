@@ -1,5 +1,6 @@
 //
-//  Copyright © 2020 Levin Li. All rights reserved.
+//  Copyright (c) Levin Li. All rights reserved.
+//  Licensed under the MIT License.
 //
 
 import Foundation
