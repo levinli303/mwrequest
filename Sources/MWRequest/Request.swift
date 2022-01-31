@@ -46,12 +46,37 @@ public extension URLSession {
     }
 }
 
-fileprivate extension Data {
-    mutating func appendString(_ string: String) {
-        let data = string.data(using: String.Encoding.utf8, allowLossyConversion: false)
-        append(data!)
+#if compiler(>=5.5) && canImport(_Concurrency)
+@available(iOS 15.0, macOS 12.0, *)
+public extension URLSession {
+    func post(to url: String, parameters: [String: String]) async throws -> (Data, URLResponse) {
+        let url = URL(string: url)!
+        var request = URLRequest(url: url)
+        request.setPostParameters(parameters)
+        return try await data(for: request, delegate: nil)
+    }
+
+    func post<T: Encodable>(to url: String, json: T, encoder: JSONEncoder?) async throws -> (Data, URLResponse) {
+        let url = URL(string: url)!
+        var request = URLRequest(url: url)
+        request.setPostParametersJson(json, encoder: encoder)
+        return try await data(for: request, delegate: nil)
+    }
+
+    func upload(to url: String, parameters: [String: String], data: Data, key: String, filename: String) async throws -> (Data, URLResponse) {
+        let url = URL(string: url)!
+        var request = URLRequest(url: url)
+        request.setUploadParameters(parameters, data: data, key: key, filename: filename)
+        return try await self.data(for: request, delegate: nil)
+    }
+
+    func get(from url: String, parameters: [String: String]) async throws -> (Data, URLResponse) {
+        let suffix = parameters.urlQueryEncoded
+        let url = URL(string: (suffix.count > 0 ? "\(url)?\(suffix)" : url))
+        return try await data(for: URLRequest(url: url!), delegate: nil)
     }
 }
+#endif
 
 fileprivate extension Dictionary where Key == String, Value == String {
     var urlQueryEncoded: String {
@@ -78,21 +103,27 @@ fileprivate extension URLRequest {
 
         /* Create upload body */
         var body = Data()
+
+        func appendString(_ string: String) {
+            let data = string.data(using: .utf8)
+            body.append(data!)
+        }
+
         /* Key/value pairs */
         let boundaryPrefix = "--\(boundary)\r\n"
         for (key, value) in parameters {
-            body.appendString(boundaryPrefix)
-            body.appendString("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
-            body.appendString("\(value)\r\n")
+            appendString(boundaryPrefix)
+            appendString("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+            appendString("\(value)\r\n")
         }
         /* File information */
-        body.appendString(boundaryPrefix)
-        body.appendString("Content-Disposition: form-data; name=\"\(key)\"; filename=\"\(filename)\"\r\n")
-        body.appendString("Content-Type: \(mimeType)\r\n\r\n")
+        appendString(boundaryPrefix)
+        appendString("Content-Disposition: form-data; name=\"\(key)\"; filename=\"\(filename)\"\r\n")
+        appendString("Content-Type: \(mimeType)\r\n\r\n")
         /* File data */
         body.append(data)
-        body.appendString("\r\n")
-        body.appendString("--".appending(boundary.appending("--")))
+        appendString("\r\n")
+        appendString("--".appending(boundary.appending("--")))
 
         httpMethod = "POST"
         httpBody = body
