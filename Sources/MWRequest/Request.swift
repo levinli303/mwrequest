@@ -5,7 +5,7 @@
 
 import Foundation
 
-#if os(Linux)
+#if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
 
@@ -47,7 +47,7 @@ public extension URLSession {
 }
 
 #if compiler(>=5.5) && canImport(_Concurrency)
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension URLSession {
     func post(to url: String, parameters: [String: String]) async throws -> (Data, URLResponse) {
         let url = URL(string: url)!
@@ -76,6 +76,23 @@ public extension URLSession {
         return try await data(for: URLRequest(url: url!), delegate: nil)
     }
 }
+
+#if canImport(FoundationNetworkinig)
+// swift-corelibs-foundation still has not integrated concurrency support for Linux yet...
+extension URLSession {
+    func data(for request: URLRequest, delegate: URLSessionDelegate?) async throws -> (data: Data, response: URLResponse) {
+        return try await withCheckedThrowingContinuation { continuation in
+            dataTask(with: request, completionHandler: { data, response, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: (data!, response!))
+                }
+            }).resume()
+        }
+    }
+}
+#endif
 #endif
 
 fileprivate extension Dictionary where Key == String, Value == String {
