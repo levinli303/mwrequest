@@ -77,7 +77,7 @@ public extension URLSession {
     }
 }
 
-#if canImport(FoundationNetworkinig)
+#if canImport(FoundationNetworking)
 // swift-corelibs-foundation still has not integrated concurrency support for Linux yet...
 extension URLSession {
     func data(for request: URLRequest, delegate: URLSessionDelegate?) async throws -> (data: Data, response: URLResponse) {
