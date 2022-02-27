@@ -47,33 +47,51 @@ public extension URLSession {
 }
 
 #if compiler(>=5.5) && canImport(_Concurrency)
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
+private extension URLSession {
+    func _dataCompat(for request: URLRequest) async throws -> (Data, URLResponse) {
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
+            return try await data(for: request, delegate: nil)
+        }
+        return try await withCheckedThrowingContinuation { continuation in
+            dataTask(with: request) { data, response, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: (data!, response!))
+            }
+        }
+    }
+}
+
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
 public extension URLSession {
     func post(to url: String, parameters: [String: String]) async throws -> (Data, URLResponse) {
         let url = URL(string: url)!
         var request = URLRequest(url: url)
         request.setPostParameters(parameters)
-        return try await data(for: request, delegate: nil)
+        return try await _dataCompat(for: request)
     }
 
     func post<T: Encodable>(to url: String, json: T, encoder: JSONEncoder?) async throws -> (Data, URLResponse) {
         let url = URL(string: url)!
         var request = URLRequest(url: url)
         request.setPostParametersJson(json, encoder: encoder)
-        return try await data(for: request, delegate: nil)
+        return try await _dataCompat(for: request)
     }
 
     func upload(to url: String, parameters: [String: String], data: Data, key: String, filename: String) async throws -> (Data, URLResponse) {
         let url = URL(string: url)!
         var request = URLRequest(url: url)
         request.setUploadParameters(parameters, data: data, key: key, filename: filename)
-        return try await self.data(for: request, delegate: nil)
+        return try await _dataCompat(for: request)
     }
 
     func get(from url: String, parameters: [String: String]) async throws -> (Data, URLResponse) {
         let suffix = parameters.urlQueryEncoded
         let url = URL(string: (suffix.count > 0 ? "\(url)?\(suffix)" : url))
-        return try await data(for: URLRequest(url: url!), delegate: nil)
+        return try await _dataCompat(for: URLRequest(url: url!))
     }
 }
 

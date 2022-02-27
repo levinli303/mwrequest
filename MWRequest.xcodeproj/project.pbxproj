@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EA6EA11C27CBA53F00D7A5B9 /* AsyncRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA6EA11B27CBA53F00D7A5B9 /* AsyncRequestHandler.swift */; };
 		EADF35A42667CED3002A7F59 /* MWRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = EADF35A22667CED3002A7F59 /* MWRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EADF35BE2667CF8D002A7F59 /* RequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = EADF35BC2667CF8D002A7F59 /* RequestHandler.swift */; };
 		EADF35BF2667CF8D002A7F59 /* Request.swift in Sources */ = {isa = PBXBuildFile; fileRef = EADF35BD2667CF8D002A7F59 /* Request.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		EA6EA11B27CBA53F00D7A5B9 /* AsyncRequestHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AsyncRequestHandler.swift; path = Sources/MWRequest/AsyncRequestHandler.swift; sourceTree = "<group>"; };
 		EADF35962667CDED002A7F59 /* MWRequest.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MWRequest.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EADF35A22667CED3002A7F59 /* MWRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MWRequest.h; sourceTree = "<group>"; };
 		EADF35A32667CED3002A7F59 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -60,6 +62,7 @@
 		EADF35BB2667CF82002A7F59 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				EA6EA11B27CBA53F00D7A5B9 /* AsyncRequestHandler.swift */,
 				EADF35BD2667CF8D002A7F59 /* Request.swift */,
 				EADF35BC2667CF8D002A7F59 /* RequestHandler.swift */,
 			);
@@ -135,6 +138,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EADF35BE2667CF8D002A7F59 /* RequestHandler.swift in Sources */,
+				EA6EA11C27CBA53F00D7A5B9 /* AsyncRequestHandler.swift in Sources */,
 				EADF35BF2667CF8D002A7F59 /* Request.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

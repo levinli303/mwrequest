@@ -12,7 +12,7 @@ import FoundationNetworking
 #endif
 
 #if compiler(>=5.5) && canImport(_Concurrency)
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
 open class AsyncBaseRequestHandler<Output> {
     private class func commonHandler(data: Data, response: URLResponse) async throws -> Output {
         guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
@@ -83,21 +83,21 @@ open class AsyncBaseRequestHandler<Output> {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
 public class AsyncEmptyRequestHandler: AsyncBaseRequestHandler<Void> {
     public override class func handleData(_ data: Data) async throws -> Void {
         return ()
     }
 }
 
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
 public class AsyncDataRequestHandler: AsyncBaseRequestHandler<Data> {
     public override class func handleData(_ data: Data) async throws -> Data {
         return data
     }
 }
 
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
 public class AsyncJSONRequestHandler<Output>: AsyncBaseRequestHandler<Output> where Output: JSONDecodable {
 
     public override class func handleData(_ data: Data) async throws -> Output {
