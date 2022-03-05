@@ -19,7 +19,7 @@ open class AsyncBaseRequestHandler<Output> {
             throw RequestError.noResponse
         }
         guard statusCode < 400 else {
-            throw RequestError.httpEror(errorString: HTTPURLResponse.localizedString(forStatusCode: statusCode))
+            throw RequestError.httpError(statusCode: statusCode, errorString: HTTPURLResponse.localizedString(forStatusCode: statusCode), responseBody: data)
         }
         return try await handleData(data)
     }
