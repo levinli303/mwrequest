@@ -79,8 +79,13 @@ public class BaseRequestHandler<Output> {
     }
 
     fileprivate func commonHandler(data: Data?, response: URLResponse?, error: Error?) -> Bool {
-        guard error == nil else {
-            callFailureHandler(.urlSessionError(error: error!))
+        if let error = error {
+            // Avoid wrapping RequestError
+            if let requestError = error as? RequestError {
+                callFailureHandler(requestError)
+                return true
+            }
+            callFailureHandler(.urlSessionError(error: error))
             return true
         }
         guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
