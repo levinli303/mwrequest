@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "MWRequest"
-  spec.version      = "0.3.2"
+  spec.version      = "0.3.3"
   spec.summary      = "HTTP request wrapper."
   spec.homepage     = "https://github.com/levinli303/mwrequest.git"
   spec.license      = "MIT"
