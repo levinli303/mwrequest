@@ -11,6 +11,12 @@ import FoundationNetworking
 
 private extension URL {
     static func from(url: String, parameters: [String: String] = [:]) throws -> URL {
+        if parameters.count == 0 {
+            guard let newURL = URL(string: url) else {
+                throw RequestError.urlError
+            }
+            return newURL
+        }
         guard var components = URLComponents(string: url) else {
             throw RequestError.urlError
         }
