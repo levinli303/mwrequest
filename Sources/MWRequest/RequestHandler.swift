@@ -11,6 +11,7 @@ import FoundationNetworking
 
 public enum RequestError: Error {
     case noResponse
+    case urlError
     case httpError(statusCode: Int, errorString: String, responseBody: Data)
     case urlSessionError(error: Error)
     case decodingError(error: Error)
@@ -20,6 +21,8 @@ public enum RequestError: Error {
 extension RequestError: LocalizedError {
     public var errorDescription: String? {
         switch self {
+        case .urlError:
+            return NSLocalizedString("Incorrect URL", comment: "")
         case .noResponse:
             return NSLocalizedString("No response", comment: "")
         case .decodingError(let error):
