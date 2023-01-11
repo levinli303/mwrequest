@@ -29,7 +29,7 @@ private extension URL {
 }
 
 public extension URLSession {
-    func post(to url: String, parameters: [String: String], headers: [String: String]?, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Swift.Void) -> URLSessionDataTask? {
+    func post(to url: String, parameters: [String: String], headers: [String: String]?, completionHandler: @Sendable @escaping (Data?, URLResponse?, Error?) -> Swift.Void) -> URLSessionDataTask? {
         do {
             let newURL = try URL.from(url: url)
             var request = URLRequest(url: newURL)
@@ -46,7 +46,7 @@ public extension URLSession {
         }
     }
 
-    func post<T: Encodable>(to url: String, json: T, encoder: JSONEncoder?, headers: [String: String]?, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Swift.Void) -> URLSessionDataTask? {
+    func post<T: Encodable>(to url: String, json: T, encoder: JSONEncoder?, headers: [String: String]?, completionHandler: @Sendable @escaping (Data?, URLResponse?, Error?) -> Swift.Void) -> URLSessionDataTask? {
         do {
             let newURL = try URL.from(url: url)
             var request = URLRequest(url: newURL)
@@ -63,7 +63,7 @@ public extension URLSession {
         }
     }
 
-    func upload(to url: String, parameters: [String: String], data: Data, key: String, filename: String, headers: [String: String]?, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask? {
+    func upload(to url: String, parameters: [String: String], data: Data, key: String, filename: String, headers: [String: String]?, completionHandler: @Sendable @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask? {
         do {
             let newURL = try URL.from(url: url)
             var request = URLRequest(url: newURL)
@@ -80,7 +80,7 @@ public extension URLSession {
         }
     }
 
-    func get(from url: String, parameters: [String: String], headers: [String: String]?, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask? {
+    func get(from url: String, parameters: [String: String], headers: [String: String]?, completionHandler: @Sendable @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask? {
         do {
             let newURL = try URL.from(url: url, parameters: parameters)
             var request = URLRequest(url: newURL)

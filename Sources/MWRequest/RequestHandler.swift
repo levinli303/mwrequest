@@ -37,7 +37,7 @@ extension RequestError: LocalizedError {
     }
 }
 
-public class BaseRequestHandler<Output> {
+public class BaseRequestHandler<Output>: @unchecked Sendable {
     public typealias SuccessHandler = (Output) -> Void
     public typealias FailureHandler = (RequestError) -> Void
     private let successHandler: SuccessHandler?
