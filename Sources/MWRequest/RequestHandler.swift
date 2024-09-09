@@ -37,17 +37,15 @@ extension RequestError: LocalizedError {
     }
 }
 
-public class BaseRequestHandler<Output>: @unchecked Sendable {
-    public typealias SuccessHandler = (Output) -> Void
-    public typealias FailureHandler = (RequestError) -> Void
-    private let successHandler: SuccessHandler?
-    private let failureHandler: FailureHandler?
+public class BaseRequestHandler<Output> {
+    private let successHandler: (@Sendable (Output) -> Void)?
+    private let failureHandler: (@Sendable (RequestError) -> Void)?
     private var dataTask: URLSessionDataTask?
 
     private var savedResult: Result<Output, RequestError>?
     private var semaphore: DispatchSemaphore?
 
-    required init(success: SuccessHandler?, failure: FailureHandler?) {
+    required init(success: (@Sendable (Output) -> Void)?, failure: (@Sendable (RequestError) -> Void)?) {
         failureHandler = failure
         successHandler = success
     }
@@ -114,10 +112,10 @@ public class BaseRequestHandler<Output>: @unchecked Sendable {
     public class func get(url: String,
                           parameters: [String: String] = [:],
                           headers: [String: String]? = nil,
-                          success: SuccessHandler? = nil,
-                          failure: FailureHandler? = nil,
+                          success: (@Sendable (Output) -> Void)? = nil,
+                          failure: (@Sendable (RequestError) -> Void)? = nil,
                           session: URLSession = .shared) -> Self {
-        let handler = self.init(success: success, failure: failure)
+        nonisolated(unsafe) let handler = self.init(success: success, failure: failure)
         let task = session.get(from: url, parameters: parameters, headers: headers) { (data, response, error) in
             _ = handler.commonHandler(data: data, response: response, error: error)
         }
@@ -128,10 +126,10 @@ public class BaseRequestHandler<Output>: @unchecked Sendable {
     public class func post(url: String,
                            parameters: [String: String] = [:],
                            headers: [String: String]? = nil,
-                           success: SuccessHandler? = nil,
-                           failure: FailureHandler? = nil,
+                           success: (@Sendable (Output) -> Void)? = nil,
+                           failure: (@Sendable (RequestError) -> Void)? = nil,
                            session: URLSession = .shared) -> Self {
-        let handler = self.init(success: success, failure: failure)
+        nonisolated(unsafe) let handler = self.init(success: success, failure: failure)
         let task = session.post(to: url, parameters: parameters, headers: headers) { (data, response, error) in
             _ = handler.commonHandler(data: data, response: response, error: error)
         }
@@ -143,10 +141,10 @@ public class BaseRequestHandler<Output>: @unchecked Sendable {
                                          json: T,
                                          encoder: JSONEncoder? = nil,
                                          headers: [String: String]? = nil,
-                                         success: SuccessHandler? = nil,
-                                         failure: FailureHandler? = nil,
+                                         success: (@Sendable (Output) -> Void)? = nil,
+                                         failure: (@Sendable (RequestError) -> Void)? = nil,
                                          session: URLSession = .shared) -> Self {
-        let handler = self.init(success: success, failure: failure)
+        nonisolated(unsafe) let handler = self.init(success: success, failure: failure)
         let task = session.post(to: url, json: json, encoder: encoder, headers: headers) { (data, response, error) in
             _ = handler.commonHandler(data: data, response: response, error: error)
         }
@@ -158,10 +156,10 @@ public class BaseRequestHandler<Output>: @unchecked Sendable {
                              data: Data, key: String = "file", filename: String,
                              parameters: [String: String] = [:],
                              headers: [String: String]? = nil,
-                             success: SuccessHandler? = nil,
-                             failure: FailureHandler? = nil,
+                             success: (@Sendable (Output) -> Void)? = nil,
+                             failure: (@Sendable (RequestError) -> Void)? = nil,
                              session: URLSession = .shared) -> Self {
-        let handler = self.init(success: success, failure: failure)
+        nonisolated(unsafe) let handler = self.init(success: success, failure: failure)
         let task = session.upload(to: url, parameters: parameters, data: data, key: key, filename: filename, headers: headers) { (data, response, error) in
             _ = handler.commonHandler(data: data, response: response, error: error)
         }
