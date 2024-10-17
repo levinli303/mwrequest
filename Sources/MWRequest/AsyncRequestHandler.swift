@@ -14,7 +14,7 @@ import FoundationNetworking
 #if compiler(>=5.5) && canImport(_Concurrency)
 @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, visionOS 1.0, *)
 open class AsyncBaseRequestHandler<Output> {
-    private class func commonHandler(data: Data, response: URLResponse) async throws -> Output {
+    private class func commonHandler(data: Data, response: URLResponse) async throws(RequestError) -> Output {
         guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
             throw RequestError.noResponse
         }
@@ -24,14 +24,14 @@ open class AsyncBaseRequestHandler<Output> {
         return try await handleData(data)
     }
 
-    open class func handleData(_ data: Data) async throws -> Output {
+    open class func handleData(_ data: Data) async throws(RequestError) -> Output {
         fatalError("Subclass should implement handleData:")
     }
 
     public class func get(url: String,
                           parameters: [String: String] = [:],
                           headers: [String: String]? = nil,
-                          session: URLSession = .shared) async throws -> Output {
+                          session: URLSession = .shared) async throws(RequestError) -> Output {
         var dataResponseTuple: (data: Data, response: URLResponse)!
         do {
             dataResponseTuple = try await session.get(from: url, parameters: parameters, headers: headers)
@@ -45,7 +45,7 @@ open class AsyncBaseRequestHandler<Output> {
     public class func post(url: String,
                            parameters: [String: String] = [:],
                            headers: [String: String]? = nil,
-                           session: URLSession = .shared) async throws -> Output {
+                           session: URLSession = .shared) async throws(RequestError) -> Output {
         var dataResponseTuple: (data: Data, response: URLResponse)!
         do {
             dataResponseTuple = try await session.post(to: url, parameters: parameters, headers: headers)
@@ -60,7 +60,7 @@ open class AsyncBaseRequestHandler<Output> {
                                          json: T,
                                          encoder: JSONEncoder? = nil,
                                          headers: [String: String]? = nil,
-                                         session: URLSession = .shared) async throws -> Output {
+                                         session: URLSession = .shared) async throws(RequestError) -> Output {
         var dataResponseTuple: (data: Data, response: URLResponse)!
         do {
             dataResponseTuple = try await session.post(to: url, json: json, encoder: encoder, headers: headers)
@@ -75,7 +75,7 @@ open class AsyncBaseRequestHandler<Output> {
                              data: Data, key: String = "file", filename: String,
                              parameters: [String: String] = [:],
                              headers: [String: String]? = nil,
-                             session: URLSession = .shared) async throws -> Output {
+                             session: URLSession = .shared) async throws(RequestError) -> Output {
         var dataResponseTuple: (data: Data, response: URLResponse)!
         do {
             dataResponseTuple = try await session.upload(to: url, parameters: parameters, data: data, key: key, filename: filename, headers: headers)
@@ -89,14 +89,14 @@ open class AsyncBaseRequestHandler<Output> {
 
 @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, visionOS 1.0, *)
 public class AsyncEmptyRequestHandler: AsyncBaseRequestHandler<Void> {
-    public override class func handleData(_ data: Data) async throws -> Void {
+    public override class func handleData(_ data: Data) async throws(RequestError) -> Void {
         return ()
     }
 }
 
 @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, visionOS 1.0, *)
 public class AsyncDataRequestHandler: AsyncBaseRequestHandler<Data> {
-    public override class func handleData(_ data: Data) async throws -> Data {
+    public override class func handleData(_ data: Data) async throws(RequestError) -> Data {
         return data
     }
 }
@@ -104,7 +104,7 @@ public class AsyncDataRequestHandler: AsyncBaseRequestHandler<Data> {
 @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, visionOS 1.0, *)
 public class AsyncJSONRequestHandler<Output>: AsyncBaseRequestHandler<Output> where Output: JSONDecodable {
 
-    public override class func handleData(_ data: Data) async throws -> Output {
+    public override class func handleData(_ data: Data) async throws(RequestError) -> Output {
         do {
             return try (Output.decoder ?? JSONDecoder()).decode(Output.self, from: data)
         } catch {
